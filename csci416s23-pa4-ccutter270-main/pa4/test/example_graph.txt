@@ -1,0 +1,12 @@
+AdjacencyGraph
+# Number of vertices
+5
+# Number of edges
+8
+# Outgoing edges with blank lines for vertices with no outgoing edges
+1 2 3 4
+2 3
+0
+0
+
+# The above blank is important as it specifies an empty adjacency for last node

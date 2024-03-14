@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Submit CS416 PA5 programs as a job to ada. This script starts a spark cluster that spans multiple
+# nodes. A new cluster is created for each job.
+
+# Set SLURM options (you should not need to change these)
+#SBATCH --job-name=pa5                          # Job name
+#SBATCH --output=pa5-%j.out                     # Name for output log file (%j is job ID)
+#SBATCH --nodes=2                               # Number of cluster nodes
+#SBATCH --ntasks-per-node=1                     # Number of workers per node
+#SBATCH --cpus-per-task=36                      # Cores per task
+#SBATCH --partition=short-spark                 # Partition (queue) 
+#SBATCH --time=00:10:00                         # Time limit hrs:min:sec
+#SBATCH --exclude=node018,node019               # Exclude nodes with different resources
+
+# Create scratch directory if it doesn't exist
+mkdir -m 755 -p $SCRATCH
+
+export MASTER=$(hostname -f):7077 
+
+echo Starting master on $MASTER
+start-master.sh
+# Sleep to allow master to start
+sleep 10s
+
+echo Starting workers
+srun spark-class org.apache.spark.deploy.worker.Worker $MASTER &
+# Again, sleep to allow workers to start
+sleep 10s
+
+# DONT MODIFY THE SCRIPT ABOVE THIS LINE
+
+echo -e "\n# Run Results -------------------------"
+
+# Don't modify the driver and executor settings, they are calibrated to the resources
+# available on the ada nodes (we try to use all but one core and most of the memory)
+spark-submit \
+  --master "spark://${MASTER}" \
+  --driver-memory 12G \
+  --driver-cores 5 \
+  --num-executors 13 \
+  --executor-cores 5 \
+  --executor-memory 12G \
+  wordcount.py \
+  "file://${PWD}/test/hanselandgretel.txt" 
+
+# Other wordcount files
+# "file://${TEXTS}/gutenberg-small.txt" 
+# "file://${TEXTS}/gutenberg-all.txt" 
+
+# Example command for pagerank
+# spark-submit \
+#   --master "spark://${MASTER}" \
+#   --driver-memory 12G \
+#   --driver-cores 5 \
+#   --num-executors 13 \
+#   --executor-cores 5 \
+#   --executor-memory 12G \
+#   pagerank.py \
+#   "file://${PWD}/test/small_graph.txt" \
+#   100
+
+
+# Other graph files
+# "file://${PWD}/test/benchmark_graph.txt" 

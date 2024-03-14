@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Submit CS416 PA1 programs as a job to ada
+
+# Set SLURM options (you should not need to change these)
+#SBATCH --job-name=pa1                          # Job name
+#SBATCH --output=pa1-%j.out                     # Name for output log file (%j is job ID)
+#SBATCH --cpus-per-task=36                      # Request the entire node
+#SBATCH --partition=short                       # Partition (queue) 
+#SBATCH --time=00:05:00                         # Time limit hrs:min:sec
+#SBATCH --exclude=node[018-019]                 # Only use "original" nodes with 36 cores
+
+# DONT MODIFY THE SLURM OPTIONS ABOVE THIS LINE
+
+# Print SLURM envirionment variables
+echo "# Job Info ----------------------------"
+echo "Job ID: ${SLURM_JOB_ID}"
+echo "Node: ${SLURMD_NODENAME}"
+echo "Starting: "`date +"%D %T"`
+
+echo -e "\n# Run Results -------------------------"
+
+# Here you can run the programs to complete the assignment, e.g.
+# ./mandelbrot-main
+
+# If you want to sweep a series of parameters you can use a bash for loop, e.g.
+# for threads in 1 2 3 4 8 18 36
+# do
+#     taskset -c 1-8 ./mandelbrot-main --threads $threads --tasks $threads
+# done
+
+
+# TESTING BEST TASKS
+for tasks in 288
+do
+    ./mandelbrot-main --tasks $tasks
+done
+
+
+
+# For reference, dump info about the processor
+echo -e "\n# CPU Info ----------------------------"
+lscpu

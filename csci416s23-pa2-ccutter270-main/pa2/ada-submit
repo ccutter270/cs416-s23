@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Submit CS416 PA2 program as a job to ada
+
+# Set SLURM options (you should not need to change these)
+#SBATCH --job-name=pa2                          # Job name
+#SBATCH --output=pa2-%j.out                     # Name for output log file (%j is job ID)
+#SBATCH --nodes=1                               # Requesting 1 node and 1 task per node
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=8                       # Limit the job to only two cores
+#SBATCH --mem=64G                               # Request enough memory to get exclusive access
+#SBATCH --partition=short                       # Partition (queue) 
+#SBATCH --time=00:05:00                         # Time limit hrs:min:sec
+
+THREADS=$SLURM_CPUS_PER_TASK
+ARGS=()
+
+usage() {
+  cat << EOF
+usage: $(basename "$0") [options]
+
+Submit CS416 PA2 program as a job to ada
+
+Options:
+  -n NAME Run the test with NAME
+  -t INT  Number of test program threads, default: $THREADS
+  -h      Print this message
+EOF
+}
+
+while getopts "n:t:h" Option
+do
+  case $Option in
+    n)
+      ARGS+=( '-n' $OPTARG )
+      ;;
+    t)
+      THREADS=$OPTARG
+      ;;
+    h)
+      usage
+      exit 0
+      ;;
+  esac
+done
+
+# DONT MODIFY ANYTHING ABOVE THIS LINE
+
+# Print SLURM envirionment variables
+echo "# Job Info ----------------------------"
+echo "Job ID: ${SLURM_JOB_ID}"
+echo "Node: ${SLURMD_NODENAME}"
+echo "Starting: "`date +"%D %T"`
+
+echo -e "\n# Run Results -------------------------"
+./pa2-main -t $THREADS "${ARGS[@]}"
+
+# To add the reference implementation, uncomment the two lines below
+# echo -e "\n# Reference Results -------------------------"
+# pa2-ref -t $THREADS "${ARGS[@]}"
+
+# For reference, dump info about the processor
+echo -e "\n# CPU Info ----------------------------"
+lscpu

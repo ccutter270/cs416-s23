@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Submit CS416 PA3 program(s)as a job to ada
+
+# Set SLURM options (you should not need to change these)
+#SBATCH --job-name=pa3                          # Job name
+#SBATCH --output=pa3-%j.out                     # Name for output log file (%j is job ID)
+#SBATCH --nodes=1                               # Requesting 1 node and 1 task per node should
+#SBATCH --ntasks-per-node=1                     # ensure exclusive access to the node
+#SBATCH --cpus-per-task=16                      # Limit the job to specified cores
+#SBATCH --partition=gpu-short                   # Use the partition with the GPUs
+#SBATCH --gres=gpu:rtxa5000:1                   # Use one NVIDIA RTX5000 GPU
+#SBATCH --time=00:05:00                         # Time limit hrs:min:sec
+
+ARGS=()
+
+usage() {
+  cat << EOF
+usage: $(basename "$0") [options]
+
+Submit CS416 PA3 program as a job to ada
+
+Options:
+  -n NAME Run the test with NAME
+  -h      Print this message
+EOF
+}
+
+while getopts "n:h" Option
+do
+  case $Option in
+    n)
+      ARGS+=( '-n' $OPTARG )
+      ;;
+    h)
+      usage
+      exit 0
+      ;;
+  esac
+done
+
+# DONT MODIFY ANYTHING ABOVE THIS LINE
+
+# Print SLURM envirionment variables
+echo "# Job Info ----------------------------"
+echo "Job ID: ${SLURM_JOB_ID}"
+echo "Node: ${SLURMD_NODENAME}"
+echo "Starting: "`date +"%D %T"`
+
+echo -e "\n# Run Results -------------------------"
+./cusaxpy-main
+./evens-main
+./render-main "${ARGS[@]}"
+
+# To add the reference implementation, uncomment the two lines below
+# echo -e "\n# Reference Results -------------------------"
+# pa3-render-ref "${ARGS[@]}"
+
+# For reference, dump info about the GPUs and processor
+echo -e "\n# CPU Info ----------------------------"
+nvidia-smi
+lscpu
